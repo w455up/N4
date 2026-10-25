@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e7">
+<title>N4 文法練習</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f1e7;--card:#fffdf8;--ink:#2b2622;--sub:#7a7066;--line:#e6ddcf;--accent:#c8442f;--accent-soft:#f6dcd5;--ok:#2f6f42;--ok-soft:#dcefe1;--ng:#b23a2b;--ng-soft:#f8dcd7;--chip:#efe7d9}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1917;--card:#252220;--ink:#efe9e1;--sub:#a59b90;--line:#3a3531;--accent:#e2674f;--accent-soft:#4a2a24;--ok:#86cf9a;--ok-soft:#22372a;--ng:#f08a7a;--ng-soft:#46261f;--chip:#302c28}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"Noto Sans TC","Noto Sans JP",system-ui,sans-serif;font-size:16px;line-height:1.6;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.jp{font-family:"Noto Sans JP","Noto Sans TC",sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+header .in{max-width:560px;margin:0 auto;padding:12px 16px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+header h1{margin:0;font-size:18px;font-weight:700}
+header .meta{font-size:13px;color:var(--sub)}
+main{max-width:560px;margin:0 auto;padding:14px 16px}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav .in{max-width:560px;margin:0 auto;display:flex}
+nav button{flex:1;border:0;background:none;color:var(--sub);font:inherit;font-size:12px;padding:8px 0 10px;display:flex;flex-direction:column;align-items:center;gap:1px}
+nav .ic{font-family:"Noto Sans JP";font-size:19px;line-height:1.3;font-weight:500}
+nav button.on{color:var(--accent);font-weight:700}
+h2{font-size:17px;margin:2px 0 10px}
+.muted{color:var(--sub);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:2px 16px 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;white-space:nowrap}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.big{font-family:"Noto Sans JP";font-size:34px;font-weight:700;text-align:center;line-height:1.3}
+.reading{text-align:center;color:var(--sub);font-family:"Noto Sans JP"}
+.ask{text-align:center;margin:8px 0 16px;font-size:15px}
+.ask b{color:var(--accent)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:12px 8px;font:inherit;font-family:"Noto Sans JP";font-size:20px;color:var(--ink);min-height:62px;word-break:break-all}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.ng{border-color:var(--ng);background:var(--ng-soft)}
+.qopts{display:flex;flex-direction:column;gap:10px}
+.qopts .opt{font-size:17px;text-align:left;padding:11px 14px;min-height:0}
+.qtext{font-family:"Noto Sans JP";font-size:19px;line-height:1.8;margin:4px 0 16px}
+.fb{margin-top:14px;border-radius:12px;padding:12px 14px;font-size:15px}
+.fb.ok{background:var(--ok-soft)}
+.fb.ng{background:var(--ng-soft)}
+.fb b{display:block;margin-bottom:2px}
+.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--accent);color:#fff;font:inherit;font-weight:700;padding:13px;margin-top:12px}
+.btn.ghost{background:var(--chip);color:var(--ink)}
+.row2{display:flex;gap:10px}
+.row2 .btn{flex:1}
+.flash{min-height:230px;display:flex;flex-direction:column;justify-content:center;text-align:center;cursor:pointer;user-select:none}
+.flash .pat{font-family:"Noto Sans JP";font-size:26px;font-weight:700;line-height:1.4}
+.flash .mean{margin-top:14px;font-size:17px;font-weight:500}
+.flash .ex{margin-top:10px;font-family:"Noto Sans JP";font-size:16px;color:var(--sub)}
+.flash .hint{margin-top:18px;font-size:13px;color:var(--sub)}
+.count{font-size:13px;color:var(--sub);text-align:right;margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--chip);border-radius:10px;padding:8px 4px;text-align:center;font-size:12px;color:var(--sub)}
+.stat b{display:block;font-size:19px;color:var(--ink)}
+.bar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.week h3{font-size:14px;margin:18px 0 8px;color:var(--sub);font-weight:500}
+.day{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.day.done .t{color:var(--sub);text-decoration:line-through}
+.day input{width:22px;height:22px;accent-color:var(--accent);flex:none;margin:0}
+.day .t{flex:1;font-size:15px;line-height:1.4}
+.day .d{font-size:12px;color:var(--sub);display:block}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.mini{border:1px solid var(--line);background:var(--chip);border-radius:8px;font:inherit;font-size:13px;padding:4px 10px;color:var(--ink)}
+.today-box .t{font-size:17px;font-weight:700;margin:2px 0 4px}
+.wq{border-top:1px solid var(--line);padding:12px 0}
+.wq:first-of-type{border-top:0}
+.wq .s{font-family:"Noto Sans JP";font-size:16px}
+.wq .a{font-size:14px;margin-top:4px}
+.wq .a span{font-family:"Noto Sans JP";color:var(--ok);font-weight:700}
+input[type=date]{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--card);color:var(--ink)}
+.exam{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:14px}
+.cd{font-size:15px;font-weight:700;color:var(--accent)}
+.link{background:none;border:0;color:var(--sub);font:inherit;font-size:13px;text-decoration:underline;padding:8px 0}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>N4 文法練習</h1><span class="meta" id="hmeta"></span></div></header>
+<main id="app"></main>
+<nav><div class="in" id="nav"></div></nav>
+<noscript>請開啟 JavaScript 才能使用。</noscript>
+<script>
+/* ========== 資料：動詞 ========== */
+const VERBS=[
+['書く','かく',1],['行く','いく',1],['聞く','きく',1],['歩く','あるく',1],['泳ぐ','およぐ',1],['急ぐ','いそぐ',1],
+['話す','はなす',1],['貸す','かす',1],['出す','だす',1],['待つ','まつ',1],['持つ','もつ',1],['立つ','たつ',1],
+['死ぬ','しぬ',1],['遊ぶ','あそぶ',1],['呼ぶ','よぶ',1],['読む','よむ',1],['飲む','のむ',1],['休む','やすむ',1],
+['買う','かう',1],['会う','あう',1],['使う','つかう',1],['洗う','あらう',1],['作る','つくる',1],['乗る','のる',1],
+['取る','とる',1],['帰る','かえる',1],['入る','はいる',1],['走る','はしる',1],['知る','しる',1],['切る','きる',1],
+['食べる','たべる',2],['見る','みる',2],['起きる','おきる',2],['寝る','ねる',2],['教える','おしえる',2],['着る','きる',2],
+['出る','でる',2],['借りる','かりる',2],['開ける','あける',2],['忘れる','わすれる',2],['浴びる','あびる',2],['降りる','おりる',2],
+['する','する',3],['来る','くる',3],['勉強する','べんきょうする',3],['運転する','うんてんする',3]
+].map(([k,r,g])=>({k,r,g}));
+
+const FORM={te:'て形',ta:'た形',nai:'ない形',masu:'ます形',vol:'意向形',pot:'可能形',pass:'受身形',caus:'使役形',cp:'使役受身形',ba:'ば形'};
+const FORM_KEYS=Object.keys(FORM);
+const ROW={'う':'わいえお','く':'かきけこ','ぐ':'がぎげご','す':'さしせそ','つ':'たちてと','ぬ':'なにねの','ぶ':'ばびべぼ','む':'まみめも','る':'らりれろ'};
+const ICH={te:'て',ta:'た',nai:'ない',masu:'ます',vol:'よう',pot:'られる',pass:'られる',caus:'させる',cp:'させられる',ba:'れば'};
+const SURU={te:'して',ta:'した',nai:'しない',masu:'します',vol:'しよう',pot:'できる',pass:'される',caus:'させる',cp:'させられる',ba:'すれば'};
+const KURU={te:'きて',ta:'きた',nai:'こない',masu:'きます',vol:'こよう',pot:'こられる',pass:'こられる',caus:'こさせる',cp:'こさせられる',ba:'くれば'};
+
+function teForm(r,ta){
+  const l=r.slice(-1),s=r.slice(0,-1);
+  let x;
+  if(r==='いく')x='って';
+  else if('うつる'.includes(l))x='って';
+  else if('むぶぬ'.includes(l))x='んで';
+  else if(l==='く')x='いて';
+  else if(l==='ぐ')x='いで';
+  else x='して';
+  if(ta)x=x.replace('て','た').replace('で','だ');
+  return s+x;
+}
+function conj(v,f){
+  const r=v.r;
+  if(v.g===3){
+    if(r==='くる')return KURU[f];
+    return r.slice(0,-2)+SURU[f];
+  }
+  if(v.g===2)return r.slice(0,-1)+ICH[f];
+  const l=r.slice(-1),s=r.slice(0,-1),w=ROW[l];
+  switch(f){
+    case 'te':return teForm(r,false);
+    case 'ta':return teForm(r,true);
+    case 'masu':return s+w[1]+'ます';
+    case 'nai':return s+w[0]+'ない';
+    case 'vol':return s+w[3]+'う';
+    case 'pot':return s+w[2]+'る';
+    case 'pass':return s+w[0]+'れる';
+    case 'caus':return s+w[0]+'せる';
+    case 'cp':return l==='す'?s+'させられる':s+w[0]+'される';
+    case 'ba':return s+w[2]+'ば';
+  }
+}
+function wrongs(v,f){
+  const r=v.r,mist=[],other=[];
+  if(f==='te'||f==='ta'){
+    const ta=f==='ta';
+    const ends=ta?['った','んだ','いた','いだ','した']:['って','んで','いて','いで','して'];
+    if(v.g===1){const s=r.slice(0,-1);ends.forEach(e=>mist.push(s+e));mist.push(s+ROW[r.slice(-1)][1]+(ta?'た':'て'));}
+    else if(v.g===2){const s=r.slice(0,-1);mist.push(s+ends[0],s+ends[1],r+(ta?'た':'て'),s+'り'+(ta?'た':'て'));}
+    else if(r==='くる'){mist.push(ta?'こた':'こて',ta?'くった':'くって',ta?'くた':'くて');}
+    else{const p=r.slice(0,-2);mist.push(p+(ta?'すた':'すて'),p+(ta?'さた':'さて'),p+(ta?'しった':'しって'));}
+  }else{
+    if(v.g===1){
+      const ms=r.slice(0,-1)+ROW[r.slice(-1)][1];
+      if(f!=='masu')mist.push(ms+ICH[f]);
+      if(r.endsWith('る'))mist.push(conj({...v,g:2},f));
+    }else if(v.g===2){mist.push(conj({...v,g:1},f));}
+    ['nai','vol','pot','pass','caus','cp','ba','masu'].forEach(x=>{if(x!==f)other.push(conj(v,x));});
+  }
+  if(other.length===0)['nai','masu','vol'].forEach(x=>other.push(conj(v,x)));
+  return shuffle(mist).concat(shuffle(other));
+}
+const IE='いきぎしじちぢにひびぴみりえけげせぜてでねへべぺめれ';
+function rule(v,f){
+  if(v.g===3){
+    const t=v.r==='くる'?KURU:SURU;
+    const name=v.r==='くる'?'来る':'する';
+    return '不規則動詞「'+name+'」要直接背：'+FORM_KEYS.map(k=>FORM[k].replace('形','')+' '+t[k]).join('・');
+  }
+  if(v.g===2)return '一段動詞：去掉「る」＋'+ICH[f]+(f==='pot'||f==='pass'?'（可能形和受身形長一樣）':'');
+  const l=v.r.slice(-1);
+  let s='五段動詞（'+l+' 結尾）：';
+  const TE={'う':'う・つ・る → って','つ':'う・つ・る → って','る':'う・つ・る → って','む':'む・ぶ・ぬ → んで','ぶ':'む・ぶ・ぬ → んで','ぬ':'む・ぶ・ぬ → んで','く':'く → いて','ぐ':'ぐ → いで','す':'す → して'};
+  const G={masu:'い段＋ます',nai:'あ段＋ない（う 結尾變 わ）',vol:'お段＋う',pot:'え段＋る',pass:'あ段＋れる',caus:'あ段＋せる',cp:(l==='す'?'す 結尾用 させられる':'あ段＋される（也可說 あ段＋せられる）'),ba:'え段＋ば'};
+  if(f==='te'||f==='ta'){
+    if(v.r==='いく')s+='行く 是例外 → 行って／行った';
+    else{let t=TE[l];if(f==='ta')t=t.replace(/て/g,'た').replace(/で/g,'だ');s+=t;}
+  }else s+=G[f];
+  if(l==='る'&&IE.includes(v.r.slice(-2,-1)))s+='。※ 長得像一段動詞，其實是五段（例外，要記！）';
+  return s;
+}
+
+/* ========== 資料：文法 ========== */
+const GROUPS=[
+{n:'助詞・數量限定',items:[
+['Nと（いっしょに）','和 N 一起','友だちといっしょに映画を見ました。'],
+['Nで','在（地點）／用（工具）／因為','バスで学校へ行きます。'],
+['Nを','離開、經過（移動）','毎朝7時に家を出ます。'],
+['N1からN2まで','從 N1 到 N2','9時から5時まで働きます。'],
+['Nまで','持續到 N（動作一直做）','3時までここで待ちます。'],
+['Nまでに','在 N 之前（期限，做一次）','3時までにレポートを出してください。'],
+['Nだけ','只有（中性）','一つだけ買いました。'],
+['Nしか～ない','只有（強調少，接否定）','100円しかありません。'],
+['Nぐらい','大約；至少','駅まで10分ぐらいです。'],
+['Nばかり','淨是、光是（帶不滿）','弟はゲームばかりしています。'],
+['Nでも','…之類的（舉例建議）；連 N 都','お茶でも飲みませんか。'],
+['Nも','也；竟多達（數量＋も）','ビールを5本も飲んだ。'],
+['N1もN2も','N1 和 N2 都','肉も魚も好きです。'],
+['N1やN2（など）','N1 和 N2 等（列舉部分）','机の上に本やペンなどがあります。'],
+['N1とかN2（とか）','N1 啦 N2 啦（口語列舉）','休みはテニスとか水泳とかをします。'],
+['N1かN2（か）','N1 或 N2','月曜日か火曜日に来てください。'],
+['～か（～か）','是否…（句中疑問）','行くか行かないか、まだ決めていません。']]},
+{n:'て形家族＋複合動詞',items:[
+['Vている','正在做；狀態持續；習慣','窓が開いています。'],
+['Vてある','（有人刻意）已經…好的狀態','窓が開けてあります。'],
+['Vておく','事先做好；放著不動','旅行の前にホテルを予約しておきます。'],
+['Vてしまう／Vちゃう','做完了；不小心…了（遺憾）','財布をなくしてしまった。'],
+['Vてみる','試著做做看','このケーキ、食べてみてください。'],
+['Vていく','（從現在）…下去；做了再去','これから寒くなっていきます。'],
+['Vてくる','（到現在）…起來；去做了再回來','ちょっと飲み物を買ってきます。'],
+['Vてから','做完 V 之後再…','手を洗ってから食べます。'],
+['Vて（すぐに）','一…就馬上','家に帰って、すぐに寝ました。'],
+['～て／Aくて／Naで','因為…（後接感情、無法控制的結果）','頭が痛くて、学校を休みました。'],
+['Vないで','不做 V 而…；請不要…','朝ご飯を食べないで会社に行った。'],
+['Vず（に）','不做 V 而…（＝ないで，書面）','辞書を使わずに読みました。'],
+['Vはじめる','開始…','雨が降りはじめました。'],
+['Vだす','突然開始…','赤ちゃんが急に泣きだした。'],
+['Vつづける','持續…','3時間歩きつづけました。'],
+['Vおわる','…完','この本はもう読みおわりました。']]},
+{n:'授受表現',items:[
+['あげる','我（或我方）給別人','私は妹に本をあげました。'],
+['くれる','別人給我（或我方）','友だちが私に花をくれました。'],
+['もらう','我從別人那裡得到','私は先生に辞書をもらいました。'],
+['やる','給（動植物、晚輩）','花に水をやります。'],
+['Vてあげる','為別人做','弟に宿題を教えてあげた。'],
+['Vてくれる','別人為我做','母がセーターを編んでくれた。'],
+['Vてもらう','請別人為我做（我得到恩惠）','友だちに写真を撮ってもらった。'],
+['Vてやる','為晚輩／動物做','犬を散歩に連れていってやった。'],
+['Vてさしあげる','為長輩做（謙讓）','先生の荷物を持ってさしあげました。'],
+['Vてくださる','長輩為我做（尊敬）','先生が説明してくださいました。'],
+['Vていただく','請長輩為我做（謙讓）','社長に書類を見ていただきました。'],
+['Vてもらえませんか','能不能請你幫我…','ちょっと手伝ってもらえませんか。'],
+['Vてくださいませんか','能不能請您…（更客氣）','もう一度言ってくださいませんか。'],
+['Vていただけませんか','能否請您…（最客氣）','駅までの道を教えていただけませんか。']]},
+{n:'許可・禁止・義務・建議',items:[
+['Vてもいい','可以做','ここで写真を撮ってもいいですか。'],
+['Vてもかまわない','做也沒關係（較正式）','鉛筆で書いてもかまいません。'],
+['Nでもいい／Nでもかまわない','N 也可以','時間は午後でもいいです。'],
+['Vなくてもいい','不做也可以','明日は来なくてもいいです。'],
+['Vなくてもかまわない','不做也沒關係','全部食べなくてもかまいません。'],
+['Nじゃなくてもいい／かまわない','不是 N 也可以','現金じゃなくてもいいですよ。'],
+['Vてはいけない／Vちゃいけない','不可以做（禁止）','ここでタバコを吸ってはいけません。'],
+['Vなければならない','必須做（義務、規定）','薬を飲まなければなりません。'],
+['Vなくてはいけない','必須做（個人需要）','宿題をしなくてはいけない。'],
+['Vないといけない','必須做（口語）','もう帰らないといけない。'],
+['Vないと','不做不行（句尾省略）','急がないと。'],
+['Vたほうがいい','最好做（建議）','早く寝たほうがいいですよ。'],
+['Vないほうがいい','最好不要做','一人で行かないほうがいい。'],
+['Vなさい','給我做（命令，對晚輩）','早く起きなさい。'],
+['Vように言う','叫（某人）做','先生は私に毎日練習するように言いました。']]},
+{n:'意志・願望・請求',items:[
+['Vたい','想做','日本へ行きたいです。'],
+['Vよう（意向形）','…吧（普通體邀約）','一緒に帰ろう。'],
+['Vようと思う','打算做（剛決定、還在想）','来年、日本語の学校に入ろうと思っています。'],
+['Vつもり','打算做（已決定的計畫）','夏休みに国へ帰るつもりです。'],
+['Vましょう','一起做吧','少し休みましょう。'],
+['Vましょうか','要不要我來做？；一起做好嗎？','荷物を持ちましょうか。'],
+['Vませんか','要不要（一起）做？（邀請）','週末、映画を見ませんか。'],
+['Vない？','要不要…？（口語邀請）','お茶、飲まない？'],
+['Vようにする','盡量做到（養成習慣）','毎日野菜を食べるようにしています。'],
+['Vようになる','變得能…／變得會…','日本語が話せるようになりました。'],
+['Vさせてください','請讓我做','今日は早く帰らせてください。']]},
+{n:'推測・樣態・傳聞・比喻',items:[
+['～はず','照理說應該（有根據）','彼は来るはずです。'],
+['～はずがない／はずはない','不可能…','そんなことを言うはずがない。'],
+['～でしょう','大概…吧','明日は晴れるでしょう。'],
+['～だろう','大概…吧（普通體）','彼はもう寝ただろう。'],
+['～かもしれない','也許…','雨が降るかもしれません。'],
+['ます形／い去掉＋そうだ（樣態）','看起來好像…（眼見）','このケーキはおいしそうです。'],
+['普通形＋そうだ（傳聞）','聽說…','天気予報によると雨が降るそうです。'],
+['～ようだ','好像…（根據觀察判斷）','誰か来たようです。'],
+['Nのようだ','像 N 一樣（比喻）','彼女の手は氷のようだ。'],
+['Nみたいだ','像 N 一樣；好像（口語版ようだ）','夢みたいだ。'],
+['～という','叫做…；據說…','「さくら」という店を知っていますか。'],
+['～ということ','…這件事（傳達內容）','明日休みだということを聞きました。']]},
+{n:'條件・時間',items:[
+['Vると','一…就（必然、自然結果）','春になると、桜が咲きます。'],
+['～ば','如果…（假設條件）','安ければ買います。'],
+['～たら','如果…；…之後','駅に着いたら、電話してください。'],
+['～なら','如果是…的話（接話題給建議）','京都へ行くなら、秋がいいですよ。'],
+['Vるとき／Vたとき','做之前／做之後的時候','日本へ行くとき、カメラを買った。'],
+['Vるまえ（に）','做…之前','寝る前に歯を磨きます。'],
+['Vたあと（で）','做…之後','授業が終わったあとで、図書館へ行く。'],
+['V1ながらV2','一邊 V1 一邊 V2','音楽を聞きながら勉強します。'],
+['Vたまま／Nのまま','保持…狀態','電気をつけたまま寝てしまった。'],
+['Vるところ／Vているところ／Vたところ','正要／正在／剛剛','今、出かけるところです。'],
+['まだ～','還（沒）…','まだ宿題が終わっていません。'],
+['もう～','已經…','もう昼ご飯を食べました。'],
+['ずっと','一直','朝からずっと雨が降っている。'],
+['Vたことがある','曾經做過（經驗）','富士山に登ったことがあります。'],
+['Vたことがない','從來沒做過','納豆を食べたことがない。'],
+['Vることがある／Vないことがある','有時會（不會）…','忙しい時は昼ご飯を食べないことがある。'],
+['Vたりする','做做…之類的（舉例）','休みの日は掃除をしたりします。'],
+['V1たりV2たりする','又 V1 又 V2（列舉動作）','週末は本を読んだり映画を見たりします。']]},
+{n:'原因・理由・目的・逆接',items:[
+['～から','因為（主觀，後可接命令）','危ないから、触らないで。'],
+['～ので','因為（客觀、較禮貌）','熱があるので、休ませてください。'],
+['～からです','是因為…（原因放句尾）','遅れたのは、電車が止まったからです。'],
+['～し、（～し）','又…又…（列舉理由）','この店は安いし、おいしいし、よく来ます。'],
+['N1も～し、N2も～','N1 也…N2 也…','頭も痛いし、熱もある。'],
+['Vる／Nの＋ために（目的）','為了…（接意志動詞）','日本で働くために、日本語を勉強しています。'],
+['～ため（に）（原因）','由於…（書面）','事故のため、電車が遅れています。'],
+['～のに','明明…卻','薬を飲んだのに、まだ熱が下がらない。'],
+['～が','但是（逆接）；開場鋪陳','すみませんが、ちょっといいですか。'],
+['ます形＋にいく／にくる／にかえる','去／來／回去做…','図書館へ本を借りに行きます。']]},
+{n:'比較・程度',items:[
+['N1はN2より～','N1 比 N2 更…','東京は大阪より大きいです。'],
+['N1よりN2のほうが～','比起 N1，N2 更…','バスより電車のほうが速い。'],
+['N1とN2とどちら（のほうが）～','N1 和 N2 哪個比較…？','犬と猫とどちらが好きですか。'],
+['N1とN2とN3でどれが～','三者之中哪個最…？','春と夏と秋でどれがいちばん好き？'],
+['N1はN2ほど～ない','N1 沒有 N2 那麼…','今年は去年ほど寒くない。'],
+['N1はN2とおなじくらい～','N1 和 N2 差不多…','弟は父と同じくらい背が高い。'],
+['～すぎる','太…（過度）','食べすぎて、おなかが痛い。'],
+['Vやすい','容易做、好做','このペンは書きやすい。'],
+['Vにくい','難以做、不好做','この漢字は覚えにくい。'],
+['あ（ん）まり～ない','不太…','あまりお酒を飲みません。'],
+['こんな／そんな／あんな／どんな','這樣／那樣／那樣／怎樣的 N','どんな音楽が好きですか。'],
+['こんなに／そんなに','這麼／那麼（程度）','そんなに高くないですよ。'],
+['い去掉＋さ','形容詞名詞化（…度）','この川の深さは5メートルです。']]},
+{n:'可能・被動・使役',items:[
+['可能形（Vられる・Vえる）','能夠做','私は漢字が読めます。'],
+['見える／聞こえる','自然看得到／聽得到','窓から山が見えます。'],
+['見られる／聞ける','有條件能看／能聽','このアプリで映画が見られる。'],
+['受身形 Vられる','被…','先生にほめられました。'],
+['迷惑受身','（困擾地）被…','雨に降られて、ぬれてしまった。'],
+['使役形 Vさせる','讓、叫（某人）做','母は弟に野菜を食べさせた。'],
+['使役受身 Vさせられる','被迫做','子どものころ、ピアノを習わされた。'],
+['Vさせてください','請讓我做','私に説明させてください。']]},
+{n:'敬語',items:[
+['おVになる','【尊敬】對方做 V','先生はもうお帰りになりました。'],
+['なさる','【尊敬】する 的尊敬語','社長はゴルフをなさいます。'],
+['Vられる（尊敬）','【尊敬】形同受身的尊敬','部長は何時に来られますか。'],
+['いらっしゃる・召し上がる・おっしゃる','【尊敬】去來在／吃喝／說','どうぞ召し上がってください。'],
+['おVする','【謙讓】我為您做 V','荷物をお持ちします。'],
+['おVいたす','【謙讓】おVする 更謙虛','資料をお送りいたします。'],
+['いたす','【謙讓】する 的謙讓語','私が説明いたします。'],
+['まいる・いただく・申す','【謙讓】去來／吃喝收下／說','田中と申します。'],
+['Vてくださる／Vていただく','長輩為我做（尊敬／謙讓）','先生に教えていただきました。']]},
+{n:'名詞化・引用・疑問詞',items:[
+['Vの／Vこと','把動詞變名詞','私の趣味は写真を撮ることです。'],
+['Vのは～','…的是～（強調）','一番好きなのは夏です。'],
+['N1のN2','N1 的 N2；子句中 の＝が','母の作った料理はおいしい。'],
+['Vかた','…的方法','この漢字の読み方を教えてください。'],
+['～かどうか','是否…','明日行けるかどうか分かりません。'],
+['疑問詞～か','句中嵌入疑問','誰が来るか知っていますか。'],
+['いつ～か／どこが～か／なぜ～か','何時／哪裡／為何…（句中）','会議がいつあるか教えてください。'],
+['だれか・なにか','某人／某物','誰か来ましたよ。'],
+['だれも～ない・なにも～ない','誰都不／什麼都不','今日は何も食べていない。'],
+['だれでも・なんでも','誰都／什麼都','何でもいいです。'],
+['どう・どうやって','怎麼樣／怎麼做','駅までどうやって行きますか。'],
+['なぜ','為什麼','なぜ遅れたんですか。'],
+['～と思う','我想、我認為','明日は雨だと思います。'],
+['～という／～っていう','說…；叫做…','田中さんは来ないと言っていました。'],
+['～というN','叫做…的 N','「花子」という人を知っていますか。'],
+['～んです','說明、強調理由','どうしたんですか。—頭が痛いんです。'],
+['知っている','知道（否定是 知らない）','その人を知っていますか。—いいえ、知りません。'],
+['～なる','變成（い→く／な・N→に＋なる）','暖かくなりました。']]},
+{n:'易混淆對照',items:[
+['だけ vs しか～ない','しか 一定接否定，語氣「少得可憐」','1つだけある／1つしかない'],
+['まで vs までに','まで＝一直做到；までに＝那之前做完一次','5時まで待つ／5時までに帰る'],
+['ている vs てある','てある 強調有人刻意弄好，他動詞＋が','ドアが開いている／ドアが開けてある'],
+['てある vs ておく','ておく＝為之後先做的動作；てある＝做好後的狀態','冷やしておく → 冷やしてある'],
+['あげる vs くれる vs もらう','往外＝あげる；往我＝くれる；我收下＝もらう','母がくれた／母にもらった'],
+['ようと思う vs つもり','つもり 已下決心；ようと思う 剛想到','行こうと思う／行くつもりだ'],
+['ようにする vs ようになる','する＝自己努力；なる＝自然變化','早く寝るようにする／読めるようになった'],
+['はず vs でしょう vs かもしれない','確定度：はず＞でしょう＞かもしれない','来るはず／来るでしょう／来るかもしれない'],
+['そうだ（樣態）vs そうだ（傳聞）','樣態接ます形／い去掉；傳聞接普通形','降りそうだ（看起來要下）／降るそうだ（聽說會下）'],
+['ようだ vs みたいだ','意思相同，みたいだ 口語；名詞：Nのようだ／Nみたいだ','夢のようだ＝夢みたいだ'],
+['と vs ば vs たら vs なら','と＝必然；ば＝條件；たら＝之後；なら＝接對方話題','春になると／安ければ／着いたら／行くなら'],
+['るとき vs たとき','前句動作還沒做→る；已做完→た','行くとき買った（出發前）／行ったとき買った（到了以後）'],
+['から vs ので','から 主觀可接命令；ので 客觀禮貌','危ないから触るな／雨なので中止です'],
+['ために vs ように','ために 接意志動詞；ように 接非意志、可能形','合格するために勉強／合格できるように勉強'],
+['のに vs ので','のに＝明明…卻；ので＝因為','勉強したのに落ちた／勉強したので受かった'],
+['見える vs 見られる','見える 自然入眼；見られる 有條件才能看','山が見える／ここで映画が見られる'],
+['可能・受身・尊敬 的 られる','長得一樣，靠上下文判斷','食べられる（能吃・被吃・您吃）'],
+['てもいい vs なくてもいい','前者「可以做」；後者「可以不做」','帰ってもいい／帰らなくてもいい']]}
+];
+
+/* ========== 資料：選擇題 ========== */
+const QS=[
+{g:1,q:'3時（　）レポートを出してください。',o:['までに','まで','から','ごろ'],a:0,e:'「交出去」是做一次的動作，有期限用までに。まで 是一直持續到那時。'},
+{g:1,q:'財布に100円（　）ありません。',o:['しか','だけ','も','ばかり'],a:0,e:'後面是否定 ありません → しか～ない。'},
+{g:1,q:'弟は毎日ゲーム（　）しています。',o:['ばかり','しか','までに','ほど'],a:0,e:'淨是做某事、帶點不滿 → ばかり。'},
+{g:1,q:'毎朝7時に家（　）出ます。',o:['を','に','で','が'],a:0,e:'離開某地點用 を（家を出る）。'},
+{g:1,q:'疲れたから、お茶（　）飲みませんか。',o:['でも','しか','まで','ほど'],a:0,e:'でも＝「…之類的」，輕鬆地提議。'},
+{g:1,q:'駅まで歩いて10分（　）かかります。',o:['ぐらい','ずつ','しか','まで'],a:0,e:'大約 → ぐらい。'},
+{g:2,q:'先生が来る前に、教室の窓を開けて（　）ください。',o:['おいて','あって','いて','しまって'],a:0,e:'為了之後先做好 → ておく（てください 前變 ておいて）。'},
+{g:2,q:'（有人刻意開著）窓が開けて（　）。',o:['あります','います','おきます','みます'],a:0,e:'他動詞（開ける）＋が＋てある＝有人弄好的狀態。'},
+{g:2,q:'大事な財布をなくして（　）。',o:['しまいました','おきました','ありました','みました'],a:0,e:'不小心、遺憾 → てしまう。'},
+{g:2,q:'このケーキ、おいしいですよ。食べて（　）ください。',o:['みて','しまって','あって','いて'],a:0,e:'試試看 → てみる。'},
+{g:2,q:'さっきから雨が降り（　）ました。',o:['はじめ','おわり','つづけ','かた'],a:0,e:'「從剛才開始」→ はじめる。'},
+{g:2,q:'手を洗って（　）、ご飯を食べます。',o:['から','まえに','ながら','あとで'],a:0,e:'て形後面只能接 から；まえに 接辭書形、あとで 接た形、ながら 接ます形。'},
+{g:2,q:'辞書を使わ（　）に読みました。',o:['ず','ない','なく','なくて'],a:0,e:'ない形去掉ない＋ずに＝ないで（書面）。'},
+{g:3,q:'友だちが私に花を（　）。',o:['くれました','あげました','もらいました','やりました'],a:0,e:'別人給「我」→ くれる。'},
+{g:3,q:'私は先生に辞書を（　）。',o:['もらいました','くれました','あげました','くださいました'],a:0,e:'主語是我、從先生「に」得到 → もらう。'},
+{g:3,q:'母がセーターを編んで（　）。',o:['くれました','あげました','もらいました','やりました'],a:0,e:'母（別人）為我做 → てくれる。'},
+{g:3,q:'友だちに写真を撮って（　）。',o:['もらいました','くれました','あげました','くださいました'],a:0,e:'「友だちに」＝請朋友做，主語是我 → てもらう。'},
+{g:3,q:'すみません、もう一度説明して（　）。',o:['いただけませんか','さしあげませんか','あげませんか','やりませんか'],a:0,e:'客氣地請對方做 → ていただけませんか。'},
+{g:3,q:'私は先生の荷物を持って（　）。',o:['さしあげました','くださいました','くれました','もらいました'],a:0,e:'我為長輩做 → てさしあげる（謙讓）。'},
+{g:4,q:'ここで写真を撮っても（　）か。',o:['いいです','いけません','なりません','ほうがいい'],a:0,e:'問許可 → てもいいですか。'},
+{g:4,q:'明日は休みですから、来なくても（　）。',o:['いいです','いけません','なりません','だめです'],a:0,e:'不做也可以 → なくてもいい。'},
+{g:4,q:'美術館の中で写真を撮っては（　）。',o:['いけません','いいです','かまいません','ほしいです'],a:0,e:'禁止 → てはいけない。'},
+{g:4,q:'熱があるなら、薬を飲まなければ（　）。',o:['なりません','いいです','かまいません','ありません'],a:0,e:'義務 → なければならない。'},
+{g:4,q:'疲れているなら、早く寝た（　）がいいですよ。',o:['ほう','もの','こと','ところ'],a:0,e:'建議 → たほうがいい。'},
+{g:4,q:'鉛筆で書いても（　）。',o:['かまいません','いけません','なりません','しかたありません'],a:0,e:'てもかまわない＝做也沒關係。'},
+{g:5,q:'夏休みに国へ帰る（　）です。もうチケットも買いました。',o:['つもり','よう','そう','まま'],a:0,e:'已經決定、買好票 → つもり。'},
+{g:5,q:'来年、日本へ留学（　）と思っています。',o:['しよう','する','した','して'],a:0,e:'打算 → 意向形＋と思う（しようと思う）。'},
+{g:5,q:'健康のために、毎日野菜を食べる（　）しています。',o:['ように','ために','そうに','みたいに'],a:0,e:'盡量做到、養成習慣 → ようにする。'},
+{g:5,q:'練習して、日本語が話せる（　）なりました。',o:['ように','ために','ことに','そうに'],a:0,e:'變得能夠 → ようになる。'},
+{g:5,q:'重そうですね。荷物を持ち（　）か。',o:['ましょう','ません','たい','なさい'],a:0,e:'主動提出幫忙 → ましょうか。'},
+{g:5,q:'体調が悪いので、今日は早く帰ら（　）ください。',o:['せて','れて','なくて','ずに'],a:0,e:'請讓我做 → 使役て形＋ください（帰らせてください）。'},
+{g:6,q:'空が暗いですね。雨が降り（　）です。',o:['そう','よう','はず','らしい'],a:0,e:'ます形＋そう＝看起來要…（眼見）。'},
+{g:6,q:'天気予報によると、明日は雨が降る（　）です。',o:['そう','ため','つもり','まま'],a:0,e:'「によると」＋普通形＋そうだ＝傳聞。'},
+{g:6,q:'彼は約束を守る人だから、来る（　）です。',o:['はず','ばかり','つもり','ため'],a:0,e:'有根據的推斷 → はず。'},
+{g:6,q:'午後は雨が降る（　）しれません。',o:['かも','はず','そう','よう'],a:0,e:'かもしれない＝也許。'},
+{g:6,q:'彼女の手は氷の（　）冷たい。',o:['ように','そうに','はずに','らしく'],a:0,e:'比喻 → Nのように。'},
+{g:6,q:'あの二人は兄弟（　）だね。よく似ている。',o:['みたい','そう','はず','つもり'],a:0,e:'名詞直接接 みたいだ；そう 不能直接接名詞。'},
+{g:6,q:'「さくら」（　）店を知っていますか。',o:['という','といった','として','とか'],a:0,e:'叫做…的 N → というN。'},
+{g:7,q:'春になる（　）、桜が咲きます。',o:['と','なら','たら','ば'],a:0,e:'自然、必然的結果 → 辭書形＋と。（なる 後不能直接接 たら／ば）'},
+{g:7,q:'駅に着い（　）、電話してください。',o:['たら','と','ば','なら'],a:0,e:'到了之後再做 → たら（着いたら）。'},
+{g:7,q:'A「京都へ行きたいです。」B「京都へ行く（　）、秋がいいですよ。」',o:['なら','と','たら','ば'],a:0,e:'接對方話題給建議 → なら。'},
+{g:7,q:'安けれ（　）買います。',o:['ば','たら','と','なら'],a:0,e:'い形容詞 ば形：安い → 安ければ。'},
+{g:7,q:'音楽を聞き（　）勉強します。',o:['ながら','まま','ところ','あいだ'],a:0,e:'一邊…一邊 → ます形＋ながら。'},
+{g:7,q:'電気をつけた（　）寝てしまいました。',o:['まま','ながら','ところ','ばかり'],a:0,e:'保持狀態 → たまま。'},
+{g:7,q:'富士山に登った（　）があります。',o:['こと','もの','ところ','の'],a:0,e:'經驗 → たことがある。'},
+{g:7,q:'寝る（　）に、歯を磨きます。',o:['まえ','あと','まま','ながら'],a:0,e:'辭書形＋まえに＝做之前。'},
+{g:8,q:'薬を飲んだ（　）、まだ熱が下がりません。',o:['のに','ので','から','ために'],a:0,e:'明明…卻 → のに。'},
+{g:8,q:'日本で働く（　）、日本語を勉強しています。',o:['ために','ように','のに','ので'],a:0,e:'働く 是意志動詞 → ために。'},
+{g:8,q:'日本語が話せる（　）、毎日練習しています。',o:['ように','ために','のに','ので'],a:0,e:'可能形（話せる）是非意志 → ように。'},
+{g:8,q:'この店は安い（　）、おいしいし、よく来ます。',o:['し','のに','ので','ため'],a:0,e:'列舉理由 → ～し、～し。'},
+{g:8,q:'遅れたのは、電車が止まった（　）です。',o:['から','ので','のに','し'],a:0,e:'～のは～からです：說明原因放句尾，只能用 から。'},
+{g:8,q:'図書館へ本を借り（　）行きます。',o:['に','で','を','へ'],a:0,e:'ます形＋に行く＝去做…。'},
+{g:9,q:'バスより電車の（　）が速いです。',o:['ほう','ほど','まで','だけ'],a:0,e:'N1よりN2のほうが。'},
+{g:9,q:'今年の夏は去年（　）暑くないです。',o:['ほど','ほう','まで','ずつ'],a:0,e:'N1はN2ほど～ない＝沒有那麼…。'},
+{g:9,q:'犬と猫と（　）が好きですか。',o:['どちら','どれ','なに','どこ'],a:0,e:'兩個比較用 どちら；三個以上用 どれ。'},
+{g:9,q:'食べ（　）て、おなかが痛いです。',o:['すぎ','やす','にく','かた'],a:0,e:'過度 → ます形＋すぎる（食べすぎて）。'},
+{g:9,q:'この漢字は画数が多くて、覚え（　）です。',o:['にくい','やすい','すぎ','たい'],a:0,e:'難以… → ます形＋にくい。'},
+{g:9,q:'この川の深（　）は5メートルです。',o:['さ','み','く','い'],a:0,e:'い形容詞名詞化 → い去掉＋さ。'},
+{g:9,q:'あまりお酒を飲み（　）。',o:['ません','ます','ましょう','たい'],a:0,e:'あまり 後面接否定。'},
+{g:10,q:'私は漢字が少し（　）。',o:['読めます','読まれます','読ませます','読みます'],a:0,e:'能力 → 可能形（読む → 読める），對象用 が。'},
+{g:10,q:'テストで100点を取って、先生にほめ（　）。',o:['られました','させました','させられました','ました'],a:0,e:'被稱讚 → 受身形（ほめられる）。'},
+{g:10,q:'母は弟に嫌いな野菜を無理に食べ（　）。',o:['させました','られました','させられました','ました'],a:0,e:'讓／逼某人做 → 使役形（食べさせる）。'},
+{g:10,q:'窓から富士山が（　）。',o:['見えます','見ます','見せます','見させます'],a:0,e:'自然進入視線 → 見える。'},
+{g:10,q:'子どものころ、嫌だったのに母にピアノを習わ（　）。',o:['されました','れました','せました','えました'],a:0,e:'被迫做 → 使役受身（習わされる＝習わせられる）。'},
+{g:10,q:'雨に（　）、服がぬれてしまいました。',o:['降られて','降らせて','降れて','降って'],a:0,e:'困擾的被動（迷惑受身）→ 雨に降られる。'},
+{g:11,q:'先生はもうお帰りに（　）。',o:['なりました','しました','いたしました','いただきました'],a:0,e:'長輩的動作 → おVになる（尊敬）。'},
+{g:11,q:'重そうですね。お荷物をお持ち（　）。',o:['します','になります','なさいます','くださいます'],a:0,e:'我為對方做 → おVする（謙讓）。'},
+{g:11,q:'では、私が説明（　）。',o:['いたします','なさいます','いらっしゃいます','おっしゃいます'],a:0,e:'自己的動作 → いたす（謙讓）。'},
+{g:11,q:'社長は毎朝ゴルフを（　）。',o:['なさいます','いたします','まいります','申します'],a:0,e:'社長的動作 → なさる（尊敬）。'},
+{g:11,q:'はじめまして。田中と（　）。',o:['申します','おっしゃいます','なさいます','いらっしゃいます'],a:0,e:'自我介紹說自己的名字 → 申す（謙讓）。'},
+{g:11,q:'どうぞたくさん（　）ください。',o:['召し上がって','いただいて','申して','まいって'],a:0,e:'請對方吃 → 召し上がる（尊敬）。'},
+{g:12,q:'私の趣味は写真を撮る（　）です。',o:['こと','もの','ところ','はず'],a:0,e:'把動詞變名詞 → こと。'},
+{g:12,q:'この漢字の読み（　）を教えてください。',o:['かた','こと','もの','ほう'],a:0,e:'…的方法 → ます形＋かた。'},
+{g:12,q:'明日行ける（　）、まだ分かりません。',o:['かどうか','かも','ように','ことが'],a:0,e:'是否… → かどうか。'},
+{g:12,q:'今日は朝から何（　）食べていません。',o:['も','か','でも','しか'],a:0,e:'什麼都沒… → なにも～ない。'},
+{g:12,q:'何（　）いいですから、飲み物を買ってきてください。',o:['でも','も','か','しか'],a:0,e:'什麼都可以 → なんでも。'},
+{g:12,q:'「どうしたんですか。」「頭が痛い（　）。」',o:['んです','ことです','ものです','はずです'],a:0,e:'說明理由 → んです。'},
+{g:12,q:'だんだん暖か（　）なりました。',o:['く','に','い','さ'],a:0,e:'い形容詞＋なる → い變く（暖かくなる）。'}
+];
+
+/* ========== 四週計畫 ========== */
+const ALLF=['te','ta','nai','masu','vol','pot','pass','caus','cp','ba'];
+const PLAN=[
+{w:'第 1 週・動詞變化',d:[
+{t:'て形・た形',f:['te','ta']},
+{t:'ない形・ます形',f:['nai','masu']},
+{t:'前兩天混合＋第一組 助詞',f:['te','ta','nai','masu'],g:1},
+{t:'意向形・可能形',f:['vol','pot']},
+{t:'受身形・使役形',f:['pass','caus']},
+{t:'使役受身・ば形',f:['cp','ba']},
+{t:'動詞全混合＋第二組 て形家族',f:ALLF,g:2}]},
+{w:'第 2 週・文法（一）',d:[
+{t:'第三組 授受表現',g:3},{t:'第四組 許可・禁止・義務',g:4},{t:'第五組 意志・願望',g:5},
+{t:'第六組 推測・樣態・傳聞',g:6},{t:'第七組 條件・時間',g:7},{t:'第八組 原因・目的・逆接',g:8},
+{t:'本週錯題＋不熟卡片',wr:1}]},
+{w:'第 3 週・文法（二）',d:[
+{t:'第九組 比較・程度',g:9},{t:'第十組 可能・被動・使役',g:10,f:['pot','pass','caus','cp']},
+{t:'第十一組 敬語',g:11},{t:'第十二組 名詞化・疑問詞',g:12},{t:'易混淆對照（卡片）',g:13},
+{t:'全部文法隨機測驗',g:0},{t:'錯題總複習',wr:1}]},
+{w:'第 4 週・模擬與衝刺',d:[
+{t:'書上模擬題（言語知識）',wr:1},{t:'模擬題錯題回頭查卡片',g:13},{t:'動詞全混合＋全部隨機',f:ALLF,g:0},
+{t:'書上模擬題（第二回）',wr:1},{t:'全部文法隨機測驗',g:0},{t:'不熟卡片清空',wr:1},
+{t:'考前：易混淆對照掃一遍',g:13}]}
+];
+const DAYS=[];PLAN.forEach(w=>w.d.forEach(d=>DAYS.push(d)));
+
+/* ========== 狀態 ========== */
+const KEY='n4-practice-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+let S=Object.assign({plan:{},wrongQ:[],weak:[],vr:0,vt:0,qr:0,qt:0,forms:['te','ta','nai'],exam:''},load());
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let TAB='today',VQ=null,C=null,Q=null;
+
+/* ========== 工具 ========== */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function pct(r,t){return t?Math.round(r/t*100)+'%':'—'}
+const $app=document.getElementById('app');
+
+/* ========== 動詞 ========== */
+function newVerb(){
+  const v=pick(VERBS),f=pick(S.forms),c=conj(v,f);
+  const opts=[c];
+  for(const w of wrongs(v,f)){if(opts.length>=4)break;if(w&&!opts.includes(w))opts.push(w)}
+  VQ={v,f,c,opts:shuffle(opts),ans:null};
+}
+function answerVerb(i){
+  if(VQ.ans!==null)return;VQ.ans=i;S.vt++;if(VQ.opts[i]===VQ.c)S.vr++;save();render();
+}
+function viewVerb(){
+  if(!VQ)newVerb();
+  const {v,f,c,opts,ans}=VQ;
+  let h='<div class="chips wrap">'+FORM_KEYS.map(k=>`<button class="chip ${S.forms.includes(k)?'on':''}" data-act="form" data-f="${k}">${FORM[k]}</button>`).join('')+'</div>';
+  h+='<div class="card"><div class="big">'+esc(v.k)+'</div><div class="reading">'+esc(v.r)+'</div>';
+  h+='<div class="ask">→ <b>'+FORM[f]+'</b> 是？</div><div class="opts">';
+  opts.forEach((o,i)=>{
+    let cls='';if(ans!==null){if(o===c)cls='ok';else if(i===ans)cls='ng'}
+    h+=`<button class="opt ${cls}" data-act="vans" data-i="${i}">${esc(o)}</button>`;
+  });
+  h+='</div>';
+  if(ans!==null){
+    const ok=opts[ans]===c;
+    h+=`<div class="fb ${ok?'ok':'ng'}"><b>${ok?'答對了！':'正確答案：'+esc(c)}</b>${esc(rule(v,f))}</div>`;
+    h+='<button class="btn" data-act="vnext">下一題</button>';
+  }
+  h+='</div><p class="muted">動詞正確率 '+pct(S.vr,S.vt)+'（'+S.vr+'／'+S.vt+'）。上方可複選要練的變化。</p>';
+  return h;
+}
+
+/* ========== 卡片 ========== */
+function startCards(g){
+  const deck=g==='w'?S.weak.slice():GROUPS[g-1].items.map((_,i)=>g+'-'+i);
+  C={g,deck:shuffle(deck),i:0,flip:false};
+}
+function cardItem(k){const [g,i]=k.split('-').map(Number);return {g,it:GROUPS[g-1].items[i]}}
+function markCard(weak){
+  const k=C.deck[C.i];
+  const idx=S.weak.indexOf(k);
+  if(weak&&idx<0)S.weak.push(k);
+  if(!weak&&idx>=0)S.weak.splice(idx,1);
+  save();C.i++;C.flip=false;render();
+}
+function groupChips(act,cur,extra){
+  let h='<div class="chips">';
+  (extra||[]).forEach(([v,l])=>h+=`<button class="chip ${String(cur)===String(v)?'on':''}" data-act="${act}" data-g="${v}">${l}</button>`);
+  return h;
+}
+function viewCards(){
+  if(!C)startCards(1);
+  let h=groupChips('cg',C.g,[['w','不熟（'+S.weak.length+'）']]);
+  GROUPS.forEach((G,i)=>h+=`<button class="chip ${String(C.g)===String(i+1)?'on':''}" data-act="cg" data-g="${i+1}">${i+1<13?(i+1)+'. ':''}${G.n}</button>`);
+  h+='</div>';
+  if(C.deck.length===0)return h+'<div class="card muted">這裡還沒有卡片。練習時按「不熟」的卡片會收集到這裡。</div>';
+  if(C.i>=C.deck.length){
+    return h+'<div class="card" style="text-align:center"><h2>這組看完了</h2><p class="muted">不熟的卡片已收進「不熟」清單。</p><button class="btn" data-act="cg" data-g="'+C.g+'">再來一次</button></div>';
+  }
+  const {g,it}=cardItem(C.deck[C.i]);
+  h+='<div class="count">'+(C.i+1)+' / '+C.deck.length+'　'+esc(GROUPS[g-1].n)+'</div>';
+  h+='<div class="card flash" data-act="flip"><div class="pat">'+esc(it[0])+'</div>';
+  if(C.flip)h+='<div class="mean">'+esc(it[1])+'</div><div class="ex">'+esc(it[2])+'</div>';
+  else h+='<div class="hint">先想想意思，再點一下看答案</div>';
+  h+='</div>';
+  if(C.flip)h+='<div class="row2"><button class="btn ghost" data-act="weak">不熟</button><button class="btn" data-act="known">記得</button></div>';
+  return h;
+}
+
+/* ========== 測驗 ========== */
+function startQuiz(g){
+  let ids;
+  if(g==='w')ids=S.wrongQ.slice();
+  else if(String(g)==='0')ids=QS.map((_,i)=>i);
+  else ids=QS.map((q,i)=>q.g===Number(g)?i:-1).filter(i=>i>=0);
+  ids=shuffle(ids).slice(0,g==='w'?20:10);
+  Q={g:String(g),list:ids.map(id=>({id,order:shuffle([0,1,2,3])})),i:0,ans:null,right:0};
+}
+function answerQuiz(i){
+  if(Q.ans!==null)return;Q.ans=i;
+  const it=Q.list[Q.i],q=QS[it.id],ok=it.order[i]===q.a;
+  S.qt++;
+  const w=S.wrongQ.indexOf(it.id);
+  if(ok){S.qr++;Q.right++;if(Q.g==='w'&&w>=0)S.wrongQ.splice(w,1)}
+  else if(w<0)S.wrongQ.push(it.id);
+  save();render();
+}
+function viewQuiz(){
+  if(!Q)startQuiz(0);
+  let h=groupChips('qg',Q.g,[['0','全部隨機'],['w','錯題（'+S.wrongQ.length+'）']]);
+  GROUPS.slice(0,12).forEach((G,i)=>h+=`<button class="chip ${Q.g===String(i+1)?'on':''}" data-act="qg" data-g="${i+1}">${i+1}. ${G.n}</button>`);
+  h+='</div>';
+  if(Q.list.length===0)return h+'<div class="card muted">目前沒有錯題，太好了！選其他組別練習吧。</div>';
+  if(Q.i>=Q.list.length){
+    return h+`<div class="card" style="text-align:center"><h2>這回合結束</h2><div class="big">${Q.right} / ${Q.list.length}</div><p class="muted">答錯的題目已收進錯題本。</p><button class="btn" data-act="qg" data-g="${Q.g}">再來一回</button></div>`;
+  }
+  const it=Q.list[Q.i],q=QS[it.id];
+  h+='<div class="count">'+(Q.i+1)+' / '+Q.list.length+'　'+esc(GROUPS[q.g-1].n)+'</div>';
+  h+='<div class="card"><div class="qtext">'+esc(q.q)+'</div><div class="qopts">';
+  it.order.forEach((oi,i)=>{
+    let cls='';if(Q.ans!==null){if(oi===q.a)cls='ok';else if(i===Q.ans)cls='ng'}
+    h+=`<button class="opt ${cls}" data-act="qans" data-i="${i}">${esc(q.o[oi])}</button>`;
+  });
+  h+='</div>';
+  if(Q.ans!==null){
+    const ok=it.order[Q.ans]===q.a;
+    h+=`<div class="fb ${ok?'ok':'ng'}"><b>${ok?'答對了！':'正確答案：'+esc(q.o[q.a])}</b>${esc(q.e)}</div><button class="btn" data-act="qnext">下一題</button>`;
+  }
+  return h+'</div>';
+}
+
+/* ========== 錯題本 ========== */
+function viewWrong(){
+  let h='<h2>錯題本</h2>';
+  h+='<div class="card">';
+  if(!S.wrongQ.length)h+='<p class="muted" style="margin:0">目前沒有錯題。</p>';
+  else{
+    S.wrongQ.forEach(id=>{const q=QS[id];h+=`<div class="wq"><div class="s">${esc(q.q)}</div><div class="a">答案：<span>${esc(q.o[q.a])}</span>　${esc(q.e)}</div></div>`});
+    h+='<button class="btn" data-act="gowrong">重做錯題（答對就移除）</button>';
+  }
+  h+='</div><h2>不熟的文法卡（'+S.weak.length+'）</h2><div class="card">';
+  if(!S.weak.length)h+='<p class="muted" style="margin:0">練卡片時按「不熟」，就會收進這裡。</p>';
+  else{
+    S.weak.forEach(k=>{const {it}=cardItem(k);h+=`<div class="wq"><div class="s">${esc(it[0])}</div><div class="a">${esc(it[1])}</div></div>`});
+    h+='<button class="btn" data-act="gocards" data-g="w">複習不熟卡片</button>';
+  }
+  h+='</div><button class="link" data-act="reset">清除所有紀錄</button>';
+  return h;
+}
+
+/* ========== 今天 ========== */
+function dayActs(d,i){
+  let h='';
+  if(d.f)h+=`<button class="mini" data-act="goverb" data-d="${i}">動詞</button>`;
+  if(d.g!==undefined){
+    if(d.g===13)h+=`<button class="mini" data-act="gocards" data-g="13">卡片</button>`;
+    else if(d.g===0)h+=`<button class="mini" data-act="goquiz" data-g="0">測驗</button>`;
+    else h+=`<button class="mini" data-act="gocards" data-g="${d.g}">卡片</button><button class="mini" data-act="goquiz" data-g="${d.g}">測驗</button>`;
+  }
+  if(d.wr)h+=`<button class="mini" data-act="gowrong">錯題</button>`;
+  return h;
+}
+function viewToday(){
+  const done=DAYS.filter((_,i)=>S.plan[i]).length;
+  const next=DAYS.findIndex((_,i)=>!S.plan[i]);
+  let h='';
+  if(next>=0){
+    const d=DAYS[next];
+    h+=`<div class="card today-box"><div class="muted">今天的任務・Day ${next+1}</div><div class="t">${esc(d.t)}</div><p class="muted" style="margin:0 0 10px">先看卡片（15 分鐘），再做測驗；錯的會自動進錯題本。</p><div class="acts" style="justify-content:flex-start">${dayActs(d,next)}</div></div>`;
+  }else h+='<div class="card today-box"><div class="t">四週計畫全部完成！</div><p class="muted" style="margin:0">接下來就多刷錯題本和易混淆對照。</p></div>';
+  h+='<div class="card"><div style="display:flex;justify-content:space-between;font-size:14px"><span>計畫進度</span><span>'+done+' / '+DAYS.length+' 天</span></div><div class="bar"><i style="width:'+(done/DAYS.length*100)+'%"></i></div>';
+  h+='<div class="stats"><div class="stat"><b>'+pct(S.vr,S.vt)+'</b>動詞正確率</div><div class="stat"><b>'+pct(S.qr,S.qt)+'</b>文法正確率</div><div class="stat"><b>'+S.wrongQ.length+'</b>錯題</div></div>';
+  let cd='';
+  if(S.exam){const t=new Date();t.setHours(0,0,0,0);const e=new Date(S.exam+'T00:00:00');const n=Math.round((e-t)/864e5);cd=n>0?'還有 '+n+' 天':(n===0?'就是今天，加油！':'考試已結束');}
+  h+='<div class="exam"><span>考試日期 <input type="date" id="exam" value="'+esc(S.exam)+'"></span><span class="cd">'+cd+'</span></div></div>';
+  PLAN.forEach(w=>{
+    h+='<div class="week"><h3>'+w.w+'</h3>';
+    w.d.forEach(d=>{
+      const i=DAYS.indexOf(d),dn=!!S.plan[i];
+      h+=`<div class="day ${dn?'done':''} ${i===next?'today':''}"><input type="checkbox" data-day="${i}" ${dn?'checked':''} aria-label="完成 Day ${i+1}"><div class="t"><span class="d">Day ${i+1}</span>${esc(d.t)}</div><div class="acts">${dayActs(d,i)}</div></div>`;
+    });
+    h+='</div>';
+  });
+  return h;
+}
+
+/* ========== 主框架 ========== */
+const TABS=[['today','今','今天'],['verb','動','動詞'],['cards','覚','卡片'],['quiz','試','測驗'],['wrong','錯','錯題']];
+function render(){
+  document.getElementById('nav').innerHTML=TABS.map(([k,ic,l])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-t="${k}"><span class="ic">${ic}</span>${l}</button>`).join('');
+  document.getElementById('hmeta').textContent='錯題 '+S.wrongQ.length+'・不熟 '+S.weak.length;
+  $app.innerHTML=TAB==='verb'?viewVerb():TAB==='cards'?viewCards():TAB==='quiz'?viewQuiz():TAB==='wrong'?viewWrong():viewToday();
+}
+function go(t){TAB=t;render();window.scrollTo(0,0)}
+const H={
+  tab:b=>go(b.dataset.t),
+  form:b=>{const f=b.dataset.f,i=S.forms.indexOf(f);if(i>=0){if(S.forms.length>1)S.forms.splice(i,1)}else S.forms.push(f);save();VQ=null;render()},
+  vans:b=>answerVerb(+b.dataset.i),
+  vnext:()=>{VQ=null;render()},
+  cg:b=>{startCards(b.dataset.g==='w'?'w':+b.dataset.g);render()},
+  flip:()=>{C.flip=!C.flip;render()},
+  weak:()=>markCard(true),
+  known:()=>markCard(false),
+  qg:b=>{startQuiz(b.dataset.g);render()},
+  qans:b=>answerQuiz(+b.dataset.i),
+  qnext:()=>{Q.i++;Q.ans=null;render();window.scrollTo(0,0)},
+  goverb:b=>{S.forms=DAYS[+b.dataset.d].f.slice();save();VQ=null;go('verb')},
+  gocards:b=>{startCards(b.dataset.g==='w'?'w':+b.dataset.g);go('cards')},
+  goquiz:b=>{startQuiz(b.dataset.g);go('quiz')},
+  gowrong:()=>{startQuiz('w');go('quiz')},
+  reset:()=>{if(confirm('確定要清除所有練習紀錄、錯題和進度嗎？')){S={plan:{},wrongQ:[],weak:[],vr:0,vt:0,qr:0,qt:0,forms:['te','ta','nai'],exam:''};save();VQ=C=Q=null;render()}}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&H[b.dataset.act])H[b.dataset.act](b)});
+document.addEventListener('change',e=>{
+  if(e.target.dataset.day!==undefined){S.plan[e.target.dataset.day]=e.target.checked;save();render()}
+  else if(e.target.id==='exam'){S.exam=e.target.value;save();render()}
+});
+render();
+</script>
+</body>
+</html>
