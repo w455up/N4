@@ -81,6 +81,9 @@ h2{font-size:17px;margin:2px 0 10px}
 input[type=date]{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--card);color:var(--ink)}
 .exam{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:14px}
 .cd{font-size:15px;font-weight:700;color:var(--accent)}
+.req{font-size:15px;padding:2px 0;color:var(--ink)}
+.req.ok{color:var(--ok);font-weight:700}
+.msg{background:var(--ok-soft);color:var(--ok);border-radius:10px;padding:10px 12px;margin-top:12px;font-weight:700;font-size:15px}
 .link{background:none;border:0;color:var(--sub);font:inherit;font-size:13px;text-decoration:underline;padding:8px 0}
 </style>
 </head>
@@ -489,9 +492,25 @@ const DAYS=[];PLAN.forEach(w=>w.d.forEach(d=>DAYS.push(d)));
 /* ========== 狀態 ========== */
 const KEY='n4-practice-v1';
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
-let S=Object.assign({plan:{},wrongQ:[],weak:[],vr:0,vt:0,qr:0,qt:0,forms:['te','ta','nai'],exam:''},load());
+function fresh(){return {plan:{},prog:{},wrongQ:[],wrongV:[],weak:[],vr:0,vt:0,qr:0,qt:0,forms:['te','ta'],exam:''}}
+let S=Object.assign(fresh(),load());
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-let TAB='today',VQ=null,C=null,Q=null;
+let TAB='today',VQ=null,VR=null,C=null,Q=null;
+
+/* ========== 每日達標 ========== */
+const VROUND=20,VPASS=18,QPASS=0.8;
+const REQ_TXT={v:'動詞：一回合 20 題，答對 18 題以上',c:'卡片：這組全部翻完一輪',q:'測驗：一回合答對 8 成以上',w:'錯題本：重做一輪錯題'};
+function todayIdx(){return DAYS.findIndex((_,i)=>!S.plan[i])}
+function reqs(d){const r=[];if(d.f)r.push('v');if(d.g!==undefined&&d.g!==0)r.push('c');if(d.g!==undefined&&d.g!==13)r.push('q');if(d.wr)r.push('w');return r}
+function credit(kind,cond){
+  const i=todayIdx();if(i<0)return '';
+  const d=DAYS[i];if(!reqs(d).includes(kind)||!cond(d))return '';
+  const p=S.prog[i]||(S.prog[i]={});
+  if(p[kind])return '';
+  p[kind]=true;
+  if(reqs(d).every(k=>p[k])){S.plan[i]=true;save();return 'Day '+(i+1)+' 全部完成！'+(i+1<DAYS.length?'明天繼續 Day '+(i+2)+'。':'四週計畫完成！')}
+  save();return 'Day '+(i+1)+' 的「'+REQ_TXT[kind].split('：')[0]+'」達標了，回「今天」看還剩什麼。';
+}
 
 /* ========== 工具 ========== */
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -501,19 +520,48 @@ function pct(r,t){return t?Math.round(r/t*100)+'%':'—'}
 const $app=document.getElementById('app');
 
 /* ========== 動詞 ========== */
+function startVerbRound(mode){
+  let list=[];
+  if(mode==='w')list=shuffle(S.wrongV.map(k=>{const [vi,f]=k.split('|');return {vi:+vi,f}})).slice(0,VROUND);
+  else{let last=-1;for(let n=0;n<VROUND;n++){let vi;do{vi=Math.floor(Math.random()*VERBS.length)}while(vi===last);last=vi;list.push({vi,f:pick(S.forms)})}}
+  VR={mode,list,i:0,right:0,msg:''};VQ=null;
+}
 function newVerb(){
-  const v=pick(VERBS),f=pick(S.forms),c=conj(v,f);
+  const it=VR.list[VR.i],v=VERBS[it.vi],f=it.f,c=conj(v,f);
   const opts=[c];
   for(const w of wrongs(v,f)){if(opts.length>=4)break;if(w&&!opts.includes(w))opts.push(w)}
-  VQ={v,f,c,opts:shuffle(opts),ans:null};
+  VQ={vi:it.vi,v,f,c,opts:shuffle(opts),ans:null};
 }
 function answerVerb(i){
-  if(VQ.ans!==null)return;VQ.ans=i;S.vt++;if(VQ.opts[i]===VQ.c)S.vr++;save();render();
+  if(VQ.ans!==null)return;VQ.ans=i;S.vt++;
+  const key=VQ.vi+'|'+VQ.f,w=S.wrongV.indexOf(key);
+  if(VQ.opts[i]===VQ.c){S.vr++;VR.right++;if(w>=0)S.wrongV.splice(w,1)}
+  else if(w<0)S.wrongV.push(key);
+  save();render();
+}
+function nextVerb(){
+  VR.i++;VQ=null;
+  if(VR.i>=VR.list.length){
+    if(VR.mode==='w')VR.msg=credit('w',()=>true);
+    else VR.msg=credit('v',d=>VR.right>=VPASS&&d.f.every(f=>S.forms.includes(f)));
+  }
+  render();window.scrollTo(0,0);
 }
 function viewVerb(){
+  if(!VR)startVerbRound('n');
+  let h=`<div class="chips"><button class="chip ${VR.mode==='n'?'on':''}" data-act="vmode" data-m="n">一般練習</button><button class="chip ${VR.mode==='w'?'on':''}" data-act="vmode" data-m="w">錯的動詞（${S.wrongV.length}）</button></div>`;
+  if(VR.mode==='n')h+='<div class="chips wrap">'+FORM_KEYS.map(k=>`<button class="chip ${S.forms.includes(k)?'on':''}" data-act="form" data-f="${k}">${FORM[k]}</button>`).join('')+'</div>';
+  if(!VR.list.length)return h+'<div class="card muted">目前沒有錯的動詞，太好了！</div>';
+  if(VR.i>=VR.list.length){
+    const n=VR.list.length,pass=VR.mode==='w'||VR.right>=VPASS;
+    h+=`<div class="card" style="text-align:center"><h2>這回合結束</h2><div class="big">${VR.right} / ${n}</div>`;
+    h+=VR.mode==='w'?'<p class="muted">答對的已從錯題本移除。</p>':(pass?'<p class="muted">達標！答錯的動詞已收進錯題本。</p>':'<p class="muted">要答對 18 題才算達標，錯的已收進錯題本。先點「錯的動詞」練一輪，再來挑戰。</p>');
+    if(VR.msg)h+='<div class="msg">'+esc(VR.msg)+'</div>';
+    return h+`<button class="btn" data-act="vmode" data-m="${VR.mode}">再來一回合</button></div>`;
+  }
   if(!VQ)newVerb();
   const {v,f,c,opts,ans}=VQ;
-  let h='<div class="chips wrap">'+FORM_KEYS.map(k=>`<button class="chip ${S.forms.includes(k)?'on':''}" data-act="form" data-f="${k}">${FORM[k]}</button>`).join('')+'</div>';
+  h+='<div class="count">'+(VR.i+1)+' / '+VR.list.length+'　答對 '+VR.right+'</div>';
   h+='<div class="card"><div class="big">'+esc(v.k)+'</div><div class="reading">'+esc(v.r)+'</div>';
   h+='<div class="ask">→ <b>'+FORM[f]+'</b> 是？</div><div class="opts">';
   opts.forEach((o,i)=>{
@@ -524,9 +572,9 @@ function viewVerb(){
   if(ans!==null){
     const ok=opts[ans]===c;
     h+=`<div class="fb ${ok?'ok':'ng'}"><b>${ok?'答對了！':'正確答案：'+esc(c)}</b>${esc(rule(v,f))}</div>`;
-    h+='<button class="btn" data-act="vnext">下一題</button>';
+    h+='<button class="btn" data-act="vnext">'+(VR.i+1>=VR.list.length?'看結果':'下一題')+'</button>';
   }
-  h+='</div><p class="muted">動詞正確率 '+pct(S.vr,S.vt)+'（'+S.vr+'／'+S.vt+'）。上方可複選要練的變化。</p>';
+  h+='</div><p class="muted">一回合 20 題，答對 18 題算達標。答錯的動詞會收進錯題本。</p>';
   return h;
 }
 
@@ -541,7 +589,9 @@ function markCard(weak){
   const idx=S.weak.indexOf(k);
   if(weak&&idx<0)S.weak.push(k);
   if(!weak&&idx>=0)S.weak.splice(idx,1);
-  save();C.i++;C.flip=false;render();
+  C.i++;C.flip=false;
+  if(C.i>=C.deck.length)C.msg=C.g==='w'?credit('w',()=>true):credit('c',d=>d.g===C.g);
+  save();render();
 }
 function groupChips(act,cur,extra){
   let h='<div class="chips">';
@@ -555,7 +605,7 @@ function viewCards(){
   h+='</div>';
   if(C.deck.length===0)return h+'<div class="card muted">這裡還沒有卡片。練習時按「不熟」的卡片會收集到這裡。</div>';
   if(C.i>=C.deck.length){
-    return h+'<div class="card" style="text-align:center"><h2>這組看完了</h2><p class="muted">不熟的卡片已收進「不熟」清單。</p><button class="btn" data-act="cg" data-g="'+C.g+'">再來一次</button></div>';
+    return h+'<div class="card" style="text-align:center"><h2>這組看完了</h2><p class="muted">不熟的卡片已收進「不熟」清單。</p>'+(C.msg?'<div class="msg">'+esc(C.msg)+'</div>':'')+'<button class="btn" data-act="cg" data-g="'+C.g+'">再來一次</button></div>';
   }
   const {g,it}=cardItem(C.deck[C.i]);
   h+='<div class="count">'+(C.i+1)+' / '+C.deck.length+'　'+esc(GROUPS[g-1].n)+'</div>';
@@ -590,9 +640,14 @@ function viewQuiz(){
   let h=groupChips('qg',Q.g,[['0','全部隨機'],['w','錯題（'+S.wrongQ.length+'）']]);
   GROUPS.slice(0,12).forEach((G,i)=>h+=`<button class="chip ${Q.g===String(i+1)?'on':''}" data-act="qg" data-g="${i+1}">${i+1}. ${G.n}</button>`);
   h+='</div>';
-  if(Q.list.length===0)return h+'<div class="card muted">目前沒有錯題，太好了！選其他組別練習吧。</div>';
+  if(Q.list.length===0){
+    let m='';if(Q.g==='w'&&!S.wrongV.length)m=credit('w',()=>true);
+    return h+'<div class="card muted">目前沒有文法錯題。'+(S.wrongV.length?'還有 '+S.wrongV.length+' 個錯的動詞，到「動詞」→「錯的動詞」練。':'太好了！')+(m?'<div class="msg">'+esc(m)+'</div>':'')+'</div>';
+  }
   if(Q.i>=Q.list.length){
-    return h+`<div class="card" style="text-align:center"><h2>這回合結束</h2><div class="big">${Q.right} / ${Q.list.length}</div><p class="muted">答錯的題目已收進錯題本。</p><button class="btn" data-act="qg" data-g="${Q.g}">再來一回</button></div>`;
+    const need=Math.ceil(Q.list.length*QPASS),pass=Q.g==='w'||Q.right>=need;
+    const note=Q.g==='w'?'答對的已從錯題本移除。':(pass?'達標！答錯的題目已收進錯題本。':'要答對 '+need+' 題才算達標，再來一回合。');
+    return h+`<div class="card" style="text-align:center"><h2>這回合結束</h2><div class="big">${Q.right} / ${Q.list.length}</div><p class="muted">${note}</p>${Q.msg?'<div class="msg">'+esc(Q.msg)+'</div>':''}<button class="btn" data-act="qg" data-g="${Q.g}">再來一回合</button></div>`;
   }
   const it=Q.list[Q.i],q=QS[it.id];
   h+='<div class="count">'+(Q.i+1)+' / '+Q.list.length+'　'+esc(GROUPS[q.g-1].n)+'</div>';
@@ -604,19 +659,25 @@ function viewQuiz(){
   h+='</div>';
   if(Q.ans!==null){
     const ok=it.order[Q.ans]===q.a;
-    h+=`<div class="fb ${ok?'ok':'ng'}"><b>${ok?'答對了！':'正確答案：'+esc(q.o[q.a])}</b>${esc(q.e)}</div><button class="btn" data-act="qnext">下一題</button>`;
+    h+=`<div class="fb ${ok?'ok':'ng'}"><b>${ok?'答對了！':'正確答案：'+esc(q.o[q.a])}</b>${esc(q.e)}</div><button class="btn" data-act="qnext">${Q.i+1>=Q.list.length?'看結果':'下一題'}</button>`;
   }
   return h+'</div>';
 }
 
 /* ========== 錯題本 ========== */
 function viewWrong(){
-  let h='<h2>錯題本</h2>';
+  let h='<h2>文法錯題（'+S.wrongQ.length+'）</h2>';
   h+='<div class="card">';
   if(!S.wrongQ.length)h+='<p class="muted" style="margin:0">目前沒有錯題。</p>';
   else{
     S.wrongQ.forEach(id=>{const q=QS[id];h+=`<div class="wq"><div class="s">${esc(q.q)}</div><div class="a">答案：<span>${esc(q.o[q.a])}</span>　${esc(q.e)}</div></div>`});
     h+='<button class="btn" data-act="gowrong">重做錯題（答對就移除）</button>';
+  }
+  h+='</div><h2>錯的動詞（'+S.wrongV.length+'）</h2><div class="card">';
+  if(!S.wrongV.length)h+='<p class="muted" style="margin:0">動詞練習答錯的，會收進這裡。</p>';
+  else{
+    S.wrongV.forEach(k=>{const [vi,f]=k.split('|'),v=VERBS[+vi];h+=`<div class="wq"><div class="s">${esc(v.k)}（${esc(v.r)}）→ ${FORM[f]}</div><div class="a">答案：<span>${esc(conj(v,f))}</span></div></div>`});
+    h+='<button class="btn" data-act="vmodego">重練錯的動詞（答對就移除）</button>';
   }
   h+='</div><h2>不熟的文法卡（'+S.weak.length+'）</h2><div class="card">';
   if(!S.weak.length)h+='<p class="muted" style="margin:0">練卡片時按「不熟」，就會收進這裡。</p>';
@@ -646,10 +707,10 @@ function viewToday(){
   let h='';
   if(next>=0){
     const d=DAYS[next];
-    h+=`<div class="card today-box"><div class="muted">今天的任務・Day ${next+1}</div><div class="t">${esc(d.t)}</div><p class="muted" style="margin:0 0 10px">先看卡片（15 分鐘），再做測驗；錯的會自動進錯題本。</p><div class="acts" style="justify-content:flex-start">${dayActs(d,next)}</div></div>`;
+    h+=`<div class="card today-box"><div class="muted">今天的任務・Day ${next+1}</div><div class="t">${esc(d.t)}</div>${reqs(d).map(k=>{const ok=(S.prog[next]||{})[k];return `<div class="req ${ok?'ok':''}">${ok?'✓':'○'} ${REQ_TXT[k]}</div>`}).join('')}<p class="muted" style="margin:8px 0 10px">每項達標會自動打勾，全部完成就換下一天。${d.wr?'書上的模擬題做完、錯題重做一輪後算完成。':''}</p><div class="acts" style="justify-content:flex-start">${dayActs(d,next)}</div></div>`;
   }else h+='<div class="card today-box"><div class="t">四週計畫全部完成！</div><p class="muted" style="margin:0">接下來就多刷錯題本和易混淆對照。</p></div>';
   h+='<div class="card"><div style="display:flex;justify-content:space-between;font-size:14px"><span>計畫進度</span><span>'+done+' / '+DAYS.length+' 天</span></div><div class="bar"><i style="width:'+(done/DAYS.length*100)+'%"></i></div>';
-  h+='<div class="stats"><div class="stat"><b>'+pct(S.vr,S.vt)+'</b>動詞正確率</div><div class="stat"><b>'+pct(S.qr,S.qt)+'</b>文法正確率</div><div class="stat"><b>'+S.wrongQ.length+'</b>錯題</div></div>';
+  h+='<div class="stats"><div class="stat"><b>'+pct(S.vr,S.vt)+'</b>動詞正確率</div><div class="stat"><b>'+pct(S.qr,S.qt)+'</b>文法正確率</div><div class="stat"><b>'+(S.wrongQ.length+S.wrongV.length)+'</b>錯題</div></div>';
   let cd='';
   if(S.exam){const t=new Date();t.setHours(0,0,0,0);const e=new Date(S.exam+'T00:00:00');const n=Math.round((e-t)/864e5);cd=n>0?'還有 '+n+' 天':(n===0?'就是今天，加油！':'考試已結束');}
   h+='<div class="exam"><span>考試日期 <input type="date" id="exam" value="'+esc(S.exam)+'"></span><span class="cd">'+cd+'</span></div></div>';
@@ -668,27 +729,32 @@ function viewToday(){
 const TABS=[['today','今','今天'],['verb','動','動詞'],['cards','覚','卡片'],['quiz','試','測驗'],['wrong','錯','錯題']];
 function render(){
   document.getElementById('nav').innerHTML=TABS.map(([k,ic,l])=>`<button class="${TAB===k?'on':''}" data-act="tab" data-t="${k}"><span class="ic">${ic}</span>${l}</button>`).join('');
-  document.getElementById('hmeta').textContent='錯題 '+S.wrongQ.length+'・不熟 '+S.weak.length;
+  document.getElementById('hmeta').textContent='錯題 '+(S.wrongQ.length+S.wrongV.length)+'・不熟 '+S.weak.length;
   $app.innerHTML=TAB==='verb'?viewVerb():TAB==='cards'?viewCards():TAB==='quiz'?viewQuiz():TAB==='wrong'?viewWrong():viewToday();
 }
 function go(t){TAB=t;render();window.scrollTo(0,0)}
 const H={
   tab:b=>go(b.dataset.t),
-  form:b=>{const f=b.dataset.f,i=S.forms.indexOf(f);if(i>=0){if(S.forms.length>1)S.forms.splice(i,1)}else S.forms.push(f);save();VQ=null;render()},
+  form:b=>{const f=b.dataset.f,i=S.forms.indexOf(f);if(i>=0){if(S.forms.length>1)S.forms.splice(i,1)}else S.forms.push(f);save();startVerbRound('n');render()},
   vans:b=>answerVerb(+b.dataset.i),
-  vnext:()=>{VQ=null;render()},
+  vnext:()=>nextVerb(),
+  vmode:b=>{startVerbRound(b.dataset.m);render()},
+  vmodego:()=>{startVerbRound('w');go('verb')},
   cg:b=>{startCards(b.dataset.g==='w'?'w':+b.dataset.g);render()},
   flip:()=>{C.flip=!C.flip;render()},
   weak:()=>markCard(true),
   known:()=>markCard(false),
   qg:b=>{startQuiz(b.dataset.g);render()},
   qans:b=>answerQuiz(+b.dataset.i),
-  qnext:()=>{Q.i++;Q.ans=null;render();window.scrollTo(0,0)},
-  goverb:b=>{S.forms=DAYS[+b.dataset.d].f.slice();save();VQ=null;go('verb')},
+  qnext:()=>{
+    Q.i++;Q.ans=null;
+    if(Q.i>=Q.list.length)Q.msg=Q.g==='w'?credit('w',()=>true):credit('q',d=>String(d.g)===Q.g&&Q.right>=Math.ceil(Q.list.length*QPASS));
+    render();window.scrollTo(0,0)},
+  goverb:b=>{S.forms=DAYS[+b.dataset.d].f.slice();save();startVerbRound('n');go('verb')},
   gocards:b=>{startCards(b.dataset.g==='w'?'w':+b.dataset.g);go('cards')},
   goquiz:b=>{startQuiz(b.dataset.g);go('quiz')},
-  gowrong:()=>{startQuiz('w');go('quiz')},
-  reset:()=>{if(confirm('確定要清除所有練習紀錄、錯題和進度嗎？')){S={plan:{},wrongQ:[],weak:[],vr:0,vt:0,qr:0,qt:0,forms:['te','ta','nai'],exam:''};save();VQ=C=Q=null;render()}}
+  gowrong:()=>{if(!S.wrongQ.length&&S.wrongV.length){startVerbRound('w');go('verb')}else{startQuiz('w');go('quiz')}},
+  reset:()=>{if(confirm('確定要清除所有練習紀錄、錯題和進度嗎？')){S=fresh();save();VQ=VR=C=Q=null;render()}}
 };
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&H[b.dataset.act])H[b.dataset.act](b)});
 document.addEventListener('change',e=>{
